@@ -152,7 +152,7 @@
                 $v.createAccountForm.account.password.$dirty &&
                   !$v.createAccountForm.account.password.passwordRegex
               "
-              >{{ $t("common.invalid-pass") }}</label
+              >{{ $t("common.invalid-password") }}</label
             >
           </div>
         </div>
@@ -169,7 +169,7 @@
             class="cortx-form-group-label"
             for="confirmPassword"
             id="s3-lblconfirmpassword"
-            >{{ $t("common.confirm-pass-label") }}</label
+            >{{ $t("common.confirm-password-label") }}</label
           >
           <input
             class="cortx-form__input_text"
@@ -187,7 +187,7 @@
               $v.createAccountForm.confirmPassword.$dirty &&
                 !$v.createAccountForm.confirmPassword.sameAsPassword
             "
-            >{{ $t("common.pass-not-match") }}</span
+            >{{ $t("common.password-not-match") }}</span
           >
         </div>
       </v-col>
@@ -432,7 +432,7 @@ export default class CortxS3Account extends Vue {
 
   public getCredentialsFileContent(): string {
     return (
-      "Account name,S3 URL,Access key,Secret key\n" +
+      "Account name,S3 URL,Access key,Secret key,Account id,Canonical id\n" +
       this.account.account_name +
       "," +
       `${this.s3UrlInfo.s3Url[0]} ${this.s3UrlInfo.s3Url[1]}` +

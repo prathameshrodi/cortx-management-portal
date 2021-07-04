@@ -15,7 +15,7 @@
 * please email opensource@seagate.com or cortx-questions@seagate.com.
 */
 <template>
-  <div>
+  <div v-feature="unsupportedFeatures.manage">
     <cortx-tabs :tabsInfo="tabsInfo" />
     <cortx-has-access :to="$cortxUserPermissions.users + $cortxUserPermissions.list">
       <CortxUserSettingLocal v-if="showUserTab" />
@@ -33,6 +33,7 @@ import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import CortxUserSettingLocal from "../onboarding/system-config/user-settings/user-setting-local.vue";
 import CortxTabs, { TabsInfo } from "../widgets/cortx-tabs.vue";
 import S3Account from "../s3/account-management.vue";
+import { unsupportedFeatures } from "../../common/unsupported-feature";
 
 @Component({
   name: "cortx-provisioning-submenu",
@@ -62,6 +63,7 @@ export default class CortxProvisioningSubmenu extends Vue {
   };
   private showUserTab: boolean = true;
   private showAccountTab: boolean = false;
+  public unsupportedFeatures = unsupportedFeatures;
 
   public mounted() {
     /*
@@ -72,14 +74,6 @@ export default class CortxProvisioningSubmenu extends Vue {
     methods or global variables declared using `Vue.prototype`.
     */
     const vueInstance: any = this;
-    if (
-      vueInstance.$hasAccessToCsm(
-        vueInstance.$cortxUserPermissions.s3accounts +
-          vueInstance.$cortxUserPermissions.update
-      )
-    ) {
-      this.$router.push("/manage/s3");
-    }
 
     this.tabsInfo.tabs = this.tabsInfo.tabs.map((tab: any) => {
       tab.show = vueInstance.$hasAccessToCsm(

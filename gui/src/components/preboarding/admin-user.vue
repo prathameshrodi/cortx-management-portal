@@ -15,7 +15,7 @@
 * please email opensource@seagate.com or cortx-questions@seagate.com.
 */
 <template>
-  <v-container class="white pa-0 ma-0" fluid>
+  <v-container class="white pa-0 ma-0" fluid v-feature="unsupportedFeatures.admin_user">
     <div class="cortx-header pl-10 py-3 col-12 black">
       <div class="cortx-brand-logo"></div>
     </div>
@@ -68,7 +68,7 @@
                       id="admin-username-required"
                       v-if="
                         $v.createAccount.username.$dirty &&
-                          !$v.createAccount.username.required
+                        !$v.createAccount.username.required
                       "
                     >
                       {{ $t("admin.adminUsernameReq") }}</label
@@ -77,7 +77,7 @@
                       id="admin-username-invalid"
                       v-else-if="
                         $v.createAccount.username.$dirty &&
-                          !$v.createAccount.username.accountNameRegex
+                        !$v.createAccount.username.accountNameRegex
                       "
                       >{{ $t("admin.usernameInvalid") }}</label
                     >
@@ -85,7 +85,7 @@
                       id="admin-username-invalid"
                       v-else-if="
                         $v.createAccount.username.$dirty &&
-                          !$v.createAccount.username.userNameRegex
+                        !$v.createAccount.username.userNameRegex
                       "
                       >{{ $t("admin.invalidRootUsername") }}</label
                     >
@@ -105,7 +105,7 @@
                     class="cortx-form-group-label"
                     for="Email"
                     id="lblAdminEmail"
-                    >{{ $t("admin.email") }}</label
+                    >{{ $t("admin.email") }}*</label
                   >
                   <div></div>
                   <input
@@ -123,7 +123,7 @@
                       id="admin-email-required"
                       v-if="
                         $v.createAccount.email.$dirty &&
-                          !$v.createAccount.email.required
+                        !$v.createAccount.email.required
                       "
                     >
                       {{ $t("admin.email-required") }}</label
@@ -132,7 +132,7 @@
                       id="admin-email-invalid"
                       v-else-if="
                         $v.createAccount.email.$dirty &&
-                          !$v.createAccount.email.email
+                        !$v.createAccount.email.email
                       "
                       >{{ $t("admin.email-invalid") }}</label
                     >
@@ -176,7 +176,7 @@
                       id="admin-password-required"
                       v-if="
                         $v.createAccount.password.$dirty &&
-                          !$v.createAccount.password.required
+                        !$v.createAccount.password.required
                       "
                       >{{ $t("admin.password-required") }}</label
                     >
@@ -184,7 +184,7 @@
                       id="admin-password-invalid"
                       v-else-if="
                         $v.createAccount.password.$dirty &&
-                          !$v.createAccount.password.passwordRegex
+                        !$v.createAccount.password.passwordRegex
                       "
                       >{{ $t("admin.password-invalid") }}</label
                     >
@@ -224,7 +224,7 @@
                       id="admin-confirmpass-notmatch"
                       v-if="
                         $v.createAccount.confirmPassword.$dirty &&
-                          !$v.createAccount.confirmPassword.sameAsPassword
+                        !$v.createAccount.confirmPassword.sameAsPassword
                       "
                       >{{ $t("admin.confirm-password-invalid") }}</label
                     >
@@ -239,7 +239,9 @@
             class="cortx-btn-primary"
             @click="gotToNextPage()"
             :disabled="
-              !isSystemStable || $v.createAccount.$invalid || createUserInProgress
+              !isSystemStable ||
+              $v.createAccount.$invalid ||
+              createUserInProgress
             "
           >
             {{ $t("admin.applyContinue") }}
@@ -275,6 +277,7 @@ import {
 import { invalid } from "moment";
 import i18n from "./preboarding.json";
 import CortxMessageDialog from "../widgets/cortx-message-dialog.vue";
+import { unsupportedFeatures } from "../../common/unsupported-feature";
 
 @Component({
   name: "cortx-admin-user",
@@ -286,8 +289,10 @@ import CortxMessageDialog from "../widgets/cortx-message-dialog.vue";
   }
 })
 export default class CortxAdminUser extends Vue {
+  public unsupportedFeatures = unsupportedFeatures;
+
   @Validations()
-  private validations = {
+  public validations = {
     createAccount: {
       username: { required, accountNameRegex, userNameRegex },
       password: { required, passwordRegex },
@@ -297,7 +302,8 @@ export default class CortxAdminUser extends Vue {
       email: { required, email }
     }
   };
-  private data() {
+
+  public data() {
     return {
       createAccount: {
         username: "",
@@ -318,27 +324,26 @@ export default class CortxAdminUser extends Vue {
   public async mounted() {
     await this.getSyetmStatus();
   }
+
   public async getSyetmStatus() {
     this.$store.dispatch(
       "systemConfig/showLoader",
-      this.$t("admin.serviceStatus")
+      this.$t("admin.systemStatus")
     );
     try {
-      const dbName = { key: "consul"};
-      const res: any = await Api.getAll(apiRegister.system_status, dbName );
+      const dbName = { key: "consul" };
+      const res: any = await Api.getAll(apiRegister.system_status, dbName);
       this.$store.dispatch("systemConfig/hideLoader");
     } catch (error) {
       this.$data.isSystemStable = false;
       let errorMessage = "Please check service status.";
-       let consul= error.data.consul;
-       let es= error.data.es;
-      if (error.data.consul!=="success"&& error.data.es!=="success" ) {
-        errorMessage = consul + ' ' + 'and' + ' ' + es;
-      }else if(error.data.consul!=="success"){
-          errorMessage = consul ;
-       }else if(error.data.es!=="success"){
-          errorMessage = es ;
-       }
+      if (error.data.consul !== "success" && error.data.es !== "success") {
+        errorMessage = error.data.consul + " " + "and" + " " + error.data.es;
+      } else if (error.data.consul !== "success") {
+        errorMessage = error.data.consul;
+      } else if (error.data.es !== "success") {
+        errorMessage = error.data.es;
+      }
       throw {
         error: {
           message: errorMessage
@@ -348,12 +353,14 @@ export default class CortxAdminUser extends Vue {
       this.$store.dispatch("systemConfig/hideLoader");
     }
   }
+
   private async gotToNextPage() {
     const queryParams = {
       username: this.$data.createAccount.username,
       password: this.$data.createAccount.password,
       email: this.$data.createAccount.email,
-      alert_notification: this.$data.createAccount.alert_notification
+      alert_notification: this.$data.createAccount.alert_notification,
+      role: 'admin'
     };
     this.$data.isValidResponse = true;
     this.$data.createUserInProgress = true;
@@ -361,7 +368,7 @@ export default class CortxAdminUser extends Vue {
 
     this.$store.dispatch("systemConfig/showLoader", "Creating admin user...");
     try {
-      const res = await Api.post(apiRegister.create_user, queryParams, {
+      const res = await Api.post(apiRegister.csm_user, queryParams, {
         timeout: 60000
       });
       if (res) {
@@ -377,6 +384,7 @@ export default class CortxAdminUser extends Vue {
       this.$store.dispatch("systemConfig/hideLoader");
     }
   }
+
   private handleEnterEvent() {
     if (
       this.$v.createAccount &&

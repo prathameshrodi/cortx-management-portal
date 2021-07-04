@@ -35,7 +35,7 @@ import CortxProvisioning from "./components/provisioning/cortx-provisioning.vue"
 import CortxProvisioningMenu from "./components/provisioning/cortx-provisioning-menu.vue";
 import CortxSettings from "./components/settings/cortx-settings.vue";
 import CortxSettingsMenu from "./components/settings/cortx-settings-menu.vue";
-import CortxAuditLog from "./components/maintenance/auditlog.vue";
+import CortxAuditLog from "./components/maintenance/cortx-auditlog.vue";
 import CortxUnauthorizedAccess from "./components/security/403.vue";
 import CortxNotFound from "./components/security/404.vue";
 import CortxPerformanceLarge from "./components/performance/performance-large.vue";
@@ -161,7 +161,10 @@ const router = new Router({
               path: "",
               name: "provisioning-menu",
               component: CortxProvisioningMenu,
-              meta: { requiresAuth: true }
+              meta: { requiresAuth: true,
+                requiredAccess:
+                  userPermissions.users + userPermissions.list
+              }
             },
             {
               path: "s3",
@@ -170,7 +173,7 @@ const router = new Router({
               meta: {
                 requiresAuth: true,
                 requiredAccess:
-                  userPermissions.s3accounts + userPermissions.list
+                  userPermissions.s3accounts + userPermissions.delete
               }
             },
             {
@@ -422,7 +425,10 @@ router.beforeEach(async (to, from, next) => {
       });
     } else {
       try {
-        await store.dispatch("userLogin/getUserPermissionsAction");
+        await Promise.all([
+          store.dispatch("userLogin/getUserPermissionsAction"),
+          store.dispatch("userLogin/getUnsupportedFeaturesAction")
+        ])
         const routerApp: any = router.app.$root;
         if (to.path === "/" && token) {
 
@@ -457,6 +463,9 @@ router.beforeEach(async (to, from, next) => {
       }
     }
   } else {
+    if (to.path.includes("preboarding")) {
+      await store.dispatch("userLogin/getUnsupportedFeaturesAction")
+    }
     next(); // make sure to always call next()!
   }
 });

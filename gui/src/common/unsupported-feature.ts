@@ -14,15 +14,25 @@
 * For any questions about this software or licensing,
 * please email opensource@seagate.com or cortx-questions@seagate.com.
 */
-import request from "request-promise";
-import dotenv from "dotenv";
-
-dotenv.config();
-export const getSessionKeys = async (user: string) => {
-  // const coreUrl = process.env.core_url;
-  const key = process.env.SESSION_KEY;
-  // const url = `https://${coreUrl}?q=${user}`;
-  // const response = await request(url);
-  console.log(`{username:"${user}",token:"${key}"}`);
-  return JSON.parse(`{"username":"${user}","token":"${key}"}`);
-};
+export const unsupportedFeatures = {
+    welcome_page: "welcome_page",
+    licence_agreement: "licence_agreement",
+    admin_user: "admin_user",
+    alerts: "alerts",
+    lyve_pilot: "lyve_pilot",
+    capacity: "capacity",
+    performance: "performance",
+    health: "health",
+    manage: "manage",
+    notification: "notification",
+    dns: "dns",
+    ntp: "ntp",
+    ssl_upload: "ssl_upload",
+    cluster_management: "cluster_management",
+    FW_Update: "FW_Update",
+    SW_Update: "SW_Update",
+    auditlog: "auditlog",
+    about: "about",
+    hctl_node: "hctl_node"
+  };
+  

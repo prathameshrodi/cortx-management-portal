@@ -122,7 +122,8 @@ export default class CortxLogin extends Vue {
       loginInProgress: false,
       isUserLoggedIn: false,
       userNamePlaceholder: this.$t("login.user-name-placeholder"),
-      passwordPlaceholder: this.$t("login.password-placeholder")
+      passwordPlaceholder: this.$t("login.password-placeholder"),
+      loginFailed: this.$t("login.login-failed")
     };
   }
 
@@ -168,16 +169,19 @@ export default class CortxLogin extends Vue {
             res.authorization
           );
           localStorage.setItem(this.$data.constStr.username, user.username);
-          return this.$store.dispatch("userLogin/getUserPermissionsAction");
+          return Promise.all([
+            this.$store.dispatch("userLogin/getUserPermissionsAction"),
+            this.$store.dispatch("userLogin/getUnsupportedFeaturesAction")
+          ]);
         } else {
-          throw new Error("Login Failed");
+          throw new Error(this.$data.loginFailed);
         }
       })
-      .then((res: any) => {
-        if (res) {
+      .then((res: any[]) => {
+        if (res && res.length) {
           this.navigate();
         } else {
-          throw new Error("Login Failed");
+          throw new Error(this.$data.loginFailed);
         }
       })
       .catch(() => {
@@ -189,19 +193,7 @@ export default class CortxLogin extends Vue {
 
   private navigate() {
     if (this.$route.name === "normal-login") {
-      // Check if user is S3 user by checking the s3accounts:update permission
-      // As only the s3 user will have this permission
-      const vueInstance: any = this;
-      if (
-        vueInstance.$hasAccessToCsm(
-          vueInstance.$cortxUserPermissions.s3accounts +
-            vueInstance.$cortxUserPermissions.update
-        )
-      ) {
-        this.$router.push("/manage/s3");
-      } else {
-        this.$router.push("/");
-      }
+      this.$router.push("/");
     } else {
       this.$router.push("/onboarding");
     }

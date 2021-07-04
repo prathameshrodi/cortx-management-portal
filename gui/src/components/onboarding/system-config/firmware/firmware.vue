@@ -16,7 +16,7 @@
 */
 
 <template>
-  <div>
+  <div v-feature="unsupportedFeatures.FW_Update">
     <div class="cortx-text-lg cortx-text-bold" id="lblUpdateFirmware">
       {{ $t("onBoarding.updateFirmware") }}
     </div>
@@ -31,10 +31,10 @@
     >
       <table>
         <tr>
-          <td style="width: 180px;">
+          <td style="width: 180px">
             <label class="cortx-text-bold">Last update status:</label>
           </td>
-          <td style="padding-top: 3px;">
+          <td style="padding-top: 3px">
             <label>{{
               lastUpgradeStatus.status
                 ? lastUpgradeStatus.status.toUpperCase()
@@ -62,8 +62,8 @@
         @click="startUpgrade()"
         :disabled="
           !isSystemStable ||
-            !isPackageAvailable ||
-            (lastUpgradeStatus && lastUpgradeStatus.status === 'in_progress')
+          !isPackageAvailable ||
+          (lastUpgradeStatus && lastUpgradeStatus.status === 'in_progress')
         "
       >
         {{ $t("onBoarding.startUpdate") }}
@@ -81,7 +81,7 @@
         class="cortx-form-group-label cortx-form-group-error-msg mt-3"
         v-if="
           firmwarePackageFormValidation.isDirty &&
-            !firmwarePackageFormValidation.isValid
+          !firmwarePackageFormValidation.isValid
         "
       >
         <label>{{ $t("onBoarding.invalidFile") }}</label>
@@ -113,6 +113,7 @@ import { Api } from "../../../../services/api";
 import apiRegister from "../../../../services/api-register";
 import { LastUpgradeStatus } from "../../../../models/firmware";
 import i18n from "../../onboarding.json";
+import { unsupportedFeatures } from "../../../../common/unsupported-feature";
 
 @Component({
   name: "cortx-firmware",
@@ -130,6 +131,8 @@ export default class CortxFirmware extends Vue {
     isValid: false
   };
   public isSystemStable: boolean = true;
+  public unsupportedFeatures = unsupportedFeatures;
+
   public async mounted() {
     await this.getSyetmStatus();
     await this.getLastUpgradeStatus();
@@ -146,18 +149,16 @@ export default class CortxFirmware extends Vue {
     } catch (error) {
       this.$data.isSystemStable = false;
       let errorMessage = "Please check service status.";
-       let consul= error.data.consul;
-       let es= error.data.es;
-      if (error.data.consul!=="success"&& error.data.es!=="success" ) {
-        errorMessage = consul + ' ' + 'and' + ' ' + es;
-      }else if(error.data.consul!=="success"){
-          errorMessage = consul ;
-       }else if(error.data.es!=="success"){
-          errorMessage = es ;
-       }
+      if (error.data.consul !== "success" && error.data.es !== "success") {
+        errorMessage = error.data.consul + " " + "and" + " " + error.data.es;
+      } else if (error.data.consul !== "success") {
+        errorMessage = error.data.consul;
+      } else if (error.data.es !== "success") {
+        errorMessage = error.data.es;
+      }
       throw {
         error: {
-          message: 'error'
+          message: "error"
         }
       };
     } finally {

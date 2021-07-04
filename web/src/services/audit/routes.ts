@@ -16,14 +16,16 @@
 */
 import { Request, Response, request, response } from "express";
 import { downloadAuditlog, showAuditlog } from "./audit-controller";
-import { checkRequiredParams } from "../../middleware/validator";
-import HttpStatus from 'http-status-codes';
+import { checkApiVersion, checkRequiredParams } from "../../middleware/validator";
+import * as audit_log_headers from './audit-log-headers.json';
+import * as s3_audit_log_headers from './s3-audit-log-headers.json';
 
 export default [
   {
-    path: "/api/v1/auditlogs/download/:component",
+    path: "/api/:version/auditlogs/download/:component",
     method: "get",
     handler: [
+      checkApiVersion,
       checkRequiredParams,
       async (req: Request, res: Response) => {
         const result = await downloadAuditlog(req, res);        
@@ -32,15 +34,37 @@ export default [
     ]
   },
   {
-    path: "/api/v1/auditlogs/show/:component",
+    path: "/api/:version/auditlogs/show/:component",
     method: "get",
     handler: [
+      checkApiVersion,
       checkRequiredParams,
       async (req: Request, res: Response) => {
         const result = await showAuditlog(req, res);
         res.status(res.statusCode).send(result);
       }
     ]
+  },
+  {
+    path: "/api/:version/auditlogs/csm-headers",
+    method: "get",
+    handler: [
+      checkApiVersion,
+      checkRequiredParams,
+      async (req: Request, res: Response) => {
+        res.status(res.statusCode).send(audit_log_headers.auditLogHeaders);
+      }
+    ]
+  },
+  {
+    path: "/api/:version/auditlogs/s3-headers",
+    method: "get",
+    handler: [
+      checkApiVersion,
+      checkRequiredParams,
+      async (req: Request, res: Response) => {
+        res.status(res.statusCode).send(s3_audit_log_headers.auditLogHeaders);
+      }
+    ]
   }
-
 ];
